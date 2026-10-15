@@ -9,7 +9,7 @@ optional account sign-in so your devices sync and can be controlled remotely.
 | Platform | Download |
 |----------|----------|
 | **Android** (phone/tablet) | [AppBlocker.apk](../../releases/download/latest/AppBlocker.apk) · [release page](../../releases/tag/latest) |
-| **Windows** (desktop) | [installer (.exe)](../../releases/download/windows-latest/) · [release page](../../releases/tag/windows-latest) |
+| **Windows** (desktop) | [release page → download the .exe](../../releases/tag/windows-latest) |
 
 Both are rebuilt automatically whenever the code changes, so the links always
 point to the newest version.
