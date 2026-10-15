@@ -1,8 +1,13 @@
-.gradle/
-build/
-app/build/
-local.properties
-.idea/
+# --- Android (anchored to repo root so they don't affect desktop/) ---
+/.gradle/
+/build/
+/app/build/
+/local.properties
+/.idea/
 *.iml
 .DS_Store
-captures/
+/captures/
+
+# --- Desktop (Electron) build output only — keep desktop/build/ (icons, nsh) ---
+/desktop/dist/
+/desktop/node_modules/
