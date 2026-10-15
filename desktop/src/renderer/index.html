@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AppBlocker</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>AppBlocker</h1>
+    <span id="statusChip" class="chip">0 active</span>
+  </header>
+
+  <div id="errorBar" class="error hidden"></div>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="blocking">Blocking</button>
+    <button class="tab" data-tab="filter">Adult &amp; Web filter</button>
+    <button class="tab" data-tab="strict">Strict Mode</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+
+  <main>
+    <!-- Blocking -->
+    <section id="blocking" class="panel active">
+      <div id="extBanner" class="ext-banner hidden"></div>
+      <div class="row-between">
+        <h2>Block lists</h2>
+        <button id="newListBtn" class="btn-outline">+ New list</button>
+      </div>
+      <div id="lists"></div>
+      <p id="emptyLists" class="muted">No block lists yet. Create one to block apps and websites.</p>
+    </section>
+
+    <!-- Adult & Web filter -->
+    <section id="filter" class="panel">
+      <h2>Adult &amp; web filter</h2>
+
+      <div class="card">
+        <label class="switch-row"><span>Adult content filter (blocks millions of adult sites in Chrome, Edge, Brave &amp; Firefox)</span>
+          <input id="adultToggle" type="checkbox" /></label>
+        <p class="muted">Makes your browsers use family-safe DNS (Cloudflare for Families) and forces Google SafeSearch on. It doesn't change your PC's network settings, so it can't slow down or cut off the internet. Independent of block lists.</p>
+        <div class="row-between mt">
+          <span id="adultStrictStatus" class="muted"></span>
+          <span>
+            <button id="adultUnlockBtn" class="btn-outline small">Unlock method</button>
+            <button id="adultLockBtn" class="btn-outline small">Lock filter</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="card">
+        <label class="switch-row"><span>Web allow-list (block all browsing except allowed sites)</span>
+          <input id="webToggle" type="checkbox" /></label>
+        <p class="muted">Enforced by the AppBlocker browser extension in Chromium browsers (Chrome, Edge, Brave,
+          Vivaldi, Opera). Browsers that can't run the extension (Firefox, Safari, Tor…) are closed while this is on,
+          so the allow-list can't be skipped. Non-browser apps are unaffected.</p>
+        <div id="webBox">
+          <label class="field"><span>Allowed websites (one per line)</span>
+            <textarea id="allowedSites" rows="5" placeholder="wikipedia.org&#10;gmail.com"></textarea></label>
+          <button id="saveAllowed" class="btn-outline small">Save allowed sites</button>
+          <p class="muted" id="webHint"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Strict -->
+    <section id="strict" class="panel">
+      <h2>Strict Mode (all blocks)</h2>
+      <p class="muted">While on, block lists can't be turned off or deleted, the adult/web filter can't be loosened,
+        and closing the window keeps everything running in the background. This is the big lock over everything;
+        each block list and the filter can also have their OWN lock.</p>
+      <div class="card">
+        <div id="strictStatus" class="muted"></div>
+        <div class="row-between mt">
+          <button id="strictUnlockBtn" class="btn-outline">Unlock method</button>
+          <button id="strictToggle" class="btn-primary">Activate Strict Mode</button>
+        </div>
+      </div>
+
+      <!-- Weekly unlock window -->
+      <div class="card">
+        <h3>Weekly unlock window</h3>
+        <p class="muted">Pick the one short window each week when Strict Mode and any frozen account can be turned
+          off. Everything stays locked the rest of the week. Minimum 1 minute.</p>
+        <label class="switch-row"><span>Only allow unlocking during this weekly window</span>
+          <input id="wwEnabled" type="checkbox" /></label>
+        <div class="row mt" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
+          <label class="field" style="min-width:140px"><span>Day</span>
+            <select id="wwDay">
+              <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
+              <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select></label>
+          <label class="field" style="min-width:120px"><span>Start time</span>
+            <input id="wwStart" type="time" value="03:00" /></label>
+          <label class="field" style="min-width:120px"><span>Length (minutes)</span>
+            <input id="wwMinutes" type="number" min="1" value="1" /></label>
+          <button id="wwSave" class="btn-outline small">Save window</button>
+        </div>
+        <p id="wwStatus" class="muted" style="margin-top:8px"></p>
+      </div>
+
+      <!-- Frozen Turkey: freeze a Windows account -->
+      <div class="card" id="frozenCard">
+        <h3>Freeze a Windows account (Frozen Turkey)</h3>
+        <p class="muted">During a freeze schedule the chosen Windows account is <b>signed out on sight</b> — it
+          can't be used at all. Other accounts still work. The freeze lifts only during your weekly unlock window.
+          Use a <b>separate</b> account from the one that manages AppBlocker.</p>
+        <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
+          <label class="field" style="min-width:180px"><span>Windows account</span>
+            <select id="frUser"></select></label>
+          <button id="frAddRangeBtn" class="btn-outline small">+ Add freeze time</button>
+        </div>
+        <div id="frRanges" style="margin-top:10px"></div>
+        <div class="row-between mt">
+          <span id="frStatus" class="muted"></span>
+          <button id="frSave" class="btn-primary small">Save freeze</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="panel">
+      <h2>Settings</h2>
+
+      <div class="card" id="adminCard" style="display:none; border:1px solid #7a5a1e; background:#2a2010">
+        <h3>⚠ You're running as an Administrator</h3>
+        <p class="muted">AppBlocker is much stronger when your <b>everyday account is a Standard user</b>, with a
+          separate Administrator account you only use when needed. As an admin, you can undo the blocks yourself —
+          as a standard user you can't (no editing the hosts file, no Safe Mode, no removing the extension).</p>
+        <p class="muted">You keep admin power either way: from a standard account, right-click any installer or
+          dev tool → <b>Run as administrator</b> and enter the admin password. Your coding still works; the blocks
+          just can't be casually bypassed.</p>
+        <ol class="muted" style="line-height:1.7; margin:4px 0 0 18px">
+          <li>Open Windows user accounts (button below).</li>
+          <li>Add a <b>new account</b> → make it an <b>Administrator</b> (give it a password you keep separate).</li>
+          <li>Change <b>your daily account</b> to <b>Standard user</b>.</li>
+          <li>Sign in to your Standard account for everyday use.</li>
+        </ol>
+        <button id="adminOpenUsers" class="btn-outline small" style="margin-top:10px">Open Windows user accounts</button>
+      </div>
+
+      <div class="card" id="adminPwCard">
+        <h3>Admin password vault</h3>
+        <p class="muted">Set a <b>strong Administrator password you don't memorise</b>, then save it here. It's
+          <b>hidden while Strict Mode is on</b> and shown again once Strict Mode is off — so during a locked week you
+          can't elevate to admin to turn AppBlocker off, but you never lose the password. Stored locally on this PC only.</p>
+        <input id="adminPwInput" type="text" placeholder="Paste the admin account password" />
+        <div class="row-between mt">
+          <span id="adminPwStatus" class="muted"></span>
+          <span>
+            <button id="adminPwSave" class="btn-outline small">Save password</button>
+            <button id="adminPwShow" class="btn-outline small">Show saved password</button>
+          </span>
+        </div>
+        <p id="adminPwReveal" class="muted" style="font-weight:600; word-break:break-all"></p>
+      </div>
+
+      <div class="card" id="cloudCard">
+        <h3>Account &amp; sync</h3>
+        <p class="muted">Sign in to sync your blocks across all your devices, and to arm Strict Mode on one device
+          from another (phone ↔ laptop). Your blocks follow your account — on a new device you just sign in and
+          press Strict Mode.</p>
+
+        <div id="cloudNotConfigured" style="display:none">
+          <p class="muted">Cloud isn't set up yet. Paste your Supabase project URL and anon key (see
+            <code>SETUP-CLOUD.md</code>), then restart the app.</p>
+          <label class="field"><span>Supabase URL</span><input id="cloudUrl" type="text" placeholder="https://xxxx.supabase.co" /></label>
+          <label class="field"><span>Supabase anon key</span><input id="cloudAnon" type="text" placeholder="eyJ..." /></label>
+          <button id="cloudSaveKeys" class="btn-outline small">Save &amp; restart</button>
+        </div>
+
+        <div id="cloudSignedOut" style="display:none">
+          <label class="field"><span>Email</span><input id="cloudEmail" type="email" placeholder="you@email.com" /></label>
+          <label class="field"><span>Password</span><input id="cloudPassword" type="password" placeholder="••••••••" /></label>
+          <div class="row-between mt">
+            <span id="cloudMsg" class="muted"></span>
+            <span>
+              <button id="cloudSignUp" class="btn-outline small">Create account</button>
+              <button id="cloudSignIn" class="btn-primary small">Sign in</button>
+            </span>
+          </div>
+        </div>
+
+        <div id="cloudSignedIn" style="display:none">
+          <p class="muted">Signed in as <b id="cloudWho"></b>. Blocks sync automatically.
+            <button id="cloudSignOut" class="btn-outline small" style="margin-left:8px">Sign out</button></p>
+          <h4 style="margin:10px 0 4px">Your devices</h4>
+          <div id="cloudDevices"></div>
+          <p class="muted">Use the buttons to arm Strict Mode or lock everything on another device. (Turning Strict
+            <i>off</i> remotely still obeys that device's unlock method — it can't bypass a real lock.)</p>
+        </div>
+      </div>
+      <label class="switch-row">
+        <span>Launch at startup</span>
+        <input id="startupToggle" type="checkbox" />
+      </label>
+      <label class="switch-row">
+        <span>Close browsers that can bypass blocking (recommended)<br>
+          <small class="muted">Closes any browser without the AppBlocker extension while website blocking is active.</small></span>
+        <input id="enforcementToggle" type="checkbox" />
+      </label>
+
+      <div class="card">
+        <h3>Browser extension</h3>
+        <p class="muted" id="extStatusLine" style="font-weight:600"></p>
+        <div id="extPerBrowser" class="ext-browsers"></div>
+
+        <label class="switch-row" style="margin-top:12px">
+          <span>Install &amp; protect the browser extension<br>
+            <small class="muted">Force-installs it in Chrome, Edge &amp; Brave so it can't be removed from the
+            browser. This switch is the only way to remove it — and it's locked while any Strict Mode / lock is on.</small></span>
+          <input id="extEnabledToggle" type="checkbox" />
+        </label>
+        <p id="extEnabledHint" class="muted"></p>
+        <p class="muted">Websites are blocked <b>inside the browser</b> by the AppBlocker extension (encrypted DNS makes
+          the hosts file alone unreliable). Once you publish it to the Chrome Web Store and Firefox Add-ons, it
+          <b>installs itself silently</b> on Chrome, Edge, Brave and Firefox and can't be removed — see
+          <code>PUBLISHING.md</code> (packages are in the <code>dist-store</code> folder).</p>
+        <p class="muted"><b>For testing before publishing:</b> Chrome/Brave → <code>chrome://extensions</code> →
+          Developer mode → <b>Load unpacked</b> → <code>src\extension</code>. Firefox → <code>about:debugging</code> →
+          Load Temporary Add-on → <code>src\extension-firefox\manifest.json</code>. This line turns green when connected.</p>
+      </div>
+
+      <div class="card" id="bitlockerCard" style="display:none">
+        <h3>Drive encryption (recommended hardening)</h3>
+        <p class="muted">The strongest honest protection against someone wiping AppBlocker from a recovery
+          command prompt is <b>BitLocker</b> drive encryption — booting into a recovery shell then requires
+          your 48-digit recovery key. Unlike disabling Windows recovery, it keeps your PC fully recoverable.</p>
+        <p class="muted" id="bitlockerStatus" style="font-weight:600"></p>
+        <p class="muted"><b>Important:</b> save your recovery key when Windows prompts you (to your Microsoft
+          account, a file, or print it). If you lose it and forget your PIN, your data is unrecoverable — so
+          Windows, not this app, walks you through turning it on.</p>
+        <button id="bitlockerBtn" class="btn-outline small">Open Windows BitLocker settings</button>
+
+        <div class="card" style="margin-top:12px; background:#14141d">
+          <h4 style="margin:0 0 6px">Recovery-key vault (so you never lose it)</h4>
+          <p class="muted">Paste your 48-digit BitLocker recovery key here and AppBlocker keeps it safe. It's
+            <b>hidden while Strict Mode is on</b> and shown again once Strict Mode is off — so it can't be used to
+            bypass the app mid-lock, but it's never lost. Stored locally on this PC only.</p>
+          <textarea id="blKeyInput" rows="2" placeholder="e.g. 123456-123456-123456-123456-123456-123456-123456-123456"></textarea>
+          <div class="row-between mt">
+            <span id="blKeyStatus" class="muted"></span>
+            <span>
+              <button id="blKeySave" class="btn-outline small">Save key</button>
+              <button id="blKeyShow" class="btn-outline small">Show saved key</button>
+            </span>
+          </div>
+          <p id="blKeyReveal" class="muted" style="font-weight:600; word-break:break-all"></p>
+
+          <hr style="border:none;border-top:1px solid #23232e;margin:12px 0" />
+          <p class="muted">Or upload the recovery-key file Windows gave you (a <b>.pdf</b> or <b>.txt</b>). It's kept
+            with your key and only opens when Strict Mode is off.</p>
+          <div class="row-between">
+            <span id="blPdfStatus" class="muted"></span>
+            <span>
+              <button id="blPdfUpload" class="btn-outline small">Upload PDF/TXT</button>
+              <button id="blPdfOpen" class="btn-outline small">Open saved file</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>How it works</h3>
+        <p class="muted">Block-list websites are blocked system-wide via the hosts file (all browsers), including their mobile and app subdomains (e.g. youtube.com also covers m.youtube.com, youtu.be and YouTube's video feeds). Apps are closed
+          automatically when they run. The web allow-list uses the AppBlocker browser extension plus closing
+          unprotected browsers. Editing the hosts file needs administrator rights, so run the app as admin.
+          See the README for the honest limits and the uninstall-window rule (every schedule must leave at least
+          one free minute a week).</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- List editor modal -->
+  <div id="editor" class="modal hidden">
+    <div class="modal-card">
+      <div class="row-between">
+        <h2 id="editorTitle">New block list</h2>
+        <button id="editorClose" class="icon">✕</button>
+      </div>
+      <label class="field"><span>Name</span>
+        <input id="listName" type="text" placeholder="e.g. Social media" /></label>
+
+      <label class="field"><span>Websites (one per line)</span>
+        <textarea id="listSites" rows="4" placeholder="instagram.com&#10;youtube.com"></textarea></label>
+
+      <label class="field"><span>Website exceptions — allowed even when the site is blocked (one per line)</span>
+        <textarea id="listExceptions" rows="3" placeholder="youtube.com/@SomeChannel&#10;facebook.com/some.profile"></textarea></label>
+      <p class="muted" style="margin-top:-6px">Lets you block a whole site but keep one page open — a specific YouTube
+        channel, a Facebook profile, a subreddit, etc. Enforced by the AppBlocker browser extension, so keep it installed.
+        Note: YouTube <b>video</b> pages (youtube.com/watch?…) don't carry the channel in the address, so a channel exception
+        allows the channel's pages but not every video it links to.</p>
+
+      <label class="field"><span>Apps to block (executable names, one per line)</span>
+        <textarea id="listApps" rows="3" placeholder="Discord.exe&#10;Spotify.exe"></textarea></label>
+      <button id="pickApps" class="btn-outline small">Pick from running apps…</button>
+      <div id="runningApps" class="chips hidden"></div>
+
+      <label class="switch-row"><span>Only block on a schedule</span>
+        <input id="schedEnabled" type="checkbox" /></label>
+      <div id="schedBox" class="hidden">
+        <div id="ranges"></div>
+        <button id="addRange" class="btn-outline small">+ Add time</button>
+      </div>
+
+      <!-- Per-list Strict Mode -->
+      <div id="listStrictSection" class="card mt">
+        <h3>Strict Mode for this list</h3>
+        <p class="muted">Locks just this list (can't be turned off, weakened or deleted) - separate from the big
+          Strict Mode. Uses this list's own unlock method.</p>
+        <div id="listStrictStatus" class="muted"></div>
+        <div class="row-between mt">
+          <button id="listUnlockBtn" class="btn-outline small">Unlock method</button>
+          <button id="listLockBtn" class="btn-outline small">Lock this list</button>
+        </div>
+        <p id="listStrictHint" class="muted"></p>
+      </div>
+
+      <div class="row-between mt">
+        <button id="deleteList" class="btn-danger hidden">Delete</button>
+        <button id="saveList" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unlock-method config modal (shared) -->
+  <div id="ucModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="row-between">
+        <h2 id="ucTitle">Unlock method</h2>
+        <button id="ucClose" class="icon">✕</button>
+      </div>
+      <p class="muted">Choose how this can be turned off. If you pick more than one, all must be satisfied.
+        With none chosen, it turns off instantly.</p>
+      <div id="ucMethods"></div>
+      <div class="row-between mt">
+        <span class="muted" id="ucNote"></span>
+        <button id="ucSave" class="btn-primary">Save unlock method</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- First-run disclosure / consent -->
+  <div id="consentModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>Before you start — how AppBlocker protects itself</h2>
+      <p class="muted">AppBlocker is a commitment tool. So it can't be casually bypassed, while Strict Mode is
+        active it will, on Windows:</p>
+      <ul class="muted" style="line-height:1.7; margin:4px 0 0 18px">
+        <li><b>Block Safe Mode</b> for standard (non-administrator) accounts.</li>
+        <li><b>Protect its own files</b> so they can't be deleted while locked.</li>
+        <li><b>Keep running in the background</b> and restart itself if closed.</li>
+        <li><b>Install a browser extension</b> (Chrome/Edge/Brave/Firefox) that can't be removed while active.</li>
+      </ul>
+      <p class="muted" style="margin-top:10px">All of this <b>automatically releases during your weekly buffer
+        window</b> — the time you set when Strict Mode can be turned off. That window is when the app can be
+        removed. Windows' own recovery (Reset / repair) is never disabled, and an administrator can always
+        remove the app.</p>
+      <p class="muted">For the Safe-Mode protection to work, use a <b>Standard user account</b> for daily use,
+        with a separate Administrator account.</p>
+      <button id="makeStandardUserBtn" class="btn-outline small">Open Windows user accounts</button>
+
+      <label class="switch-row" style="margin-top:14px">
+        <span>I understand and agree to how AppBlocker protects itself.</span>
+        <input id="consentCheck" type="checkbox" />
+      </label>
+      <div class="row-between mt">
+        <span></span>
+        <button id="consentAgree" class="btn-primary" disabled>Agree &amp; continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

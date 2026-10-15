@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.appblocker.helper</string>
+  <key>EnvironmentVariables</key>
+  <dict><key>ELECTRON_RUN_AS_NODE</key><string>1</string></dict>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Applications/AppBlocker.app/Contents/MacOS/AppBlocker</string>
+    <string>/Applications/AppBlocker.app/Contents/Resources/app/src/helper/helper.js</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardErrorPath</key><string>/var/log/appblocker-helper.log</string>
+  <key>StandardOutPath</key><string>/var/log/appblocker-helper.log</string>
+</dict>
+</plist>

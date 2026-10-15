@@ -1,0 +1,19 @@
+AppBlocker Web Filter extension
+================================
+Extension ID (pinned by the "key" in manifest.json): bghhcnjlkiacnebfdfkpmihgnlohglci
+
+This ID is referenced by src/main/policy.js (force-install policy). Keep them in sync.
+
+Testing now (unpacked):
+  Chrome/Edge -> Extensions -> enable Developer mode -> "Load unpacked" -> select src/extension/
+  The extension connects to the app's local control server (127.0.0.1:47113) and
+  enforces the allow-list immediately. browserwatch also enforces regardless.
+
+Production force-install (so users can't remove it):
+  Option A - Chrome Web Store: publish this folder. The CWS gives it the SAME ID
+    because of the "key" field. policy.js already points at the CWS update URL.
+  Option B - Self-host: pack a .crx with the private key (keytool/crx3), host an
+    update.xml, and set UPDATE_URL in src/main/policy.js to that update.xml URL.
+
+The private signing key used to derive this ID was generated for you; keep your
+own copy if you self-host so the ID stays stable across updates.

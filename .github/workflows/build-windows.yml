@@ -1,0 +1,50 @@
+name: Build Windows Installer
+
+# Builds the Windows desktop installer (AppBlocker-Setup-<version>.exe) on a
+# Windows cloud machine and publishes it to the "windows-latest" release, so you
+# always have a public download link for the newest build.
+#  - Runs automatically whenever anything in desktop/ changes.
+#  - Or run it by hand: Actions tab -> this workflow -> Run workflow.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/build-windows.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-windows
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build the installer
+        run: npm run dist:win
+
+      - name: Publish to the "windows-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-latest
+          name: Windows installer (latest)
+          prerelease: true
+          files: desktop/dist/*.exe

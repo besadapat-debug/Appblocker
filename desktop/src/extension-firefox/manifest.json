@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "AppBlocker Web Filter",
+  "version": "1.0.1",
+  "description": "Enforces AppBlocker's website blocking. Managed by the AppBlocker app.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "appblocker@local",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "permissions": ["webNavigation", "tabs", "storage", "alarms", "http://127.0.0.1:47113/*", "<all_urls>"],
+  "browser_action": { "default_popup": "popup.html", "default_title": "AppBlocker Web Filter" },
+  "background": { "scripts": ["background.js"], "persistent": true },
+  "web_accessible_resources": ["blocked.html", "blocked.js"]
+}
