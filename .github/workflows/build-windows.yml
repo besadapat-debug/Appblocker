@@ -1,10 +1,7 @@
 name: Build Windows Installer
 
 # Builds the Windows desktop installer (AppBlocker-Setup-<version>.exe) on a
-# Windows cloud machine and publishes it to the "windows-latest" release, so you
-# always have a public download link for the newest build.
-#  - Runs automatically whenever anything in desktop/ changes.
-#  - Or run it by hand: Actions tab -> this workflow -> Run workflow.
+# Windows cloud machine and publishes it to the "windows-latest" release.
 
 on:
   workflow_dispatch:
@@ -23,9 +20,6 @@ concurrency:
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: desktop
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
@@ -36,15 +30,41 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
+        working-directory: desktop
         run: npm install --no-audit --no-fund
 
       - name: Build the installer
-        run: npm run dist:win
+        id: build
+        working-directory: desktop
+        shell: bash
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          set -o pipefail
+          npm run dist:win 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
 
-      - name: Publish to the "windows-latest" release
+      - name: Capture log tail (always)
+        if: always()
+        shell: bash
+        run: |
+          echo '```' > "$GITHUB_WORKSPACE/build-tail.txt"
+          tail -c 6000 "$GITHUB_WORKSPACE/build.log" >> "$GITHUB_WORKSPACE/build-tail.txt" 2>/dev/null || echo "(no log)" >> "$GITHUB_WORKSPACE/build-tail.txt"
+          echo '```' >> "$GITHUB_WORKSPACE/build-tail.txt"
+
+      - name: Publish installer to "windows-latest" release (on success)
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: windows-latest
           name: Windows installer (latest)
           prerelease: true
           files: desktop/dist/*.exe
+
+      - name: Publish build log to "windows-ci-log" (on failure)
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-ci-log
+          name: Windows CI build log
+          prerelease: true
+          body_path: build-tail.txt
