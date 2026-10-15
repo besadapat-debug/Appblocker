@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AppBlocker</string>
+    <string name="accessibility_service_description">AppBlocker uses Accessibility access to detect the instant a blocked app is opened, and to read the web address shown in your browser\'s address bar so it can block websites on your block lists. Nothing is recorded, stored, or sent anywhere.</string>
+</resources>

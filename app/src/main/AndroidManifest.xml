@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Lets this app draw its "block curtain" screen on top of other apps -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Show the startup lock as soon as the phone finishes restarting -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Lets the "Close background apps" button stop other apps' background work -->
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+
+    <!-- Account sign-in + multi-device cloud sync -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+
+    <!-- Required on modern Android so this app is allowed to see which
+         other apps are installed on the phone -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- Home screen apps, so allow-lists never block the launcher -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
+        <!-- The package installer, so the uninstall screen can be detected -->
+        <intent>
+            <action android:name="android.intent.action.DELETE" />
+            <data android:scheme="package" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".AppBlockerApp"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher_legacy"
+        android:roundIcon="@drawable/ic_launcher_legacy"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.AppBlocker"
+        android:usesCleartextTraffic="false">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ManageAppsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker" />
+        <activity
+            android:name=".BlockListEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".SplitLauncherActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker" />
+        <activity
+            android:name=".StrictScheduleActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker" />
+        <activity
+            android:name=".SelectOptionsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker" />
+        <activity
+            android:name=".UnlockMethodActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker" />
+        <activity
+            android:name=".ListLockActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppBlocker" />
+
+        <receiver
+            android:name=".BlockerDeviceAdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_policies" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".AppBlockAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Removes notifications from blocked apps (user grants
+             "Notification access" in system settings) -->
+        <service
+            android:name=".NotificationBlockerService"
+            android:exported="true"
+            android:label="AppBlocker notification blocking"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>

@@ -1,0 +1,2 @@
+Adult-site domain list bundled with AppBlocker.
+Merged from StevenBlack/hosts porn extensions (sinfonietta, clefspeare13, tiuxo), MIT License, Copyright (c) Steven Black and contributors.

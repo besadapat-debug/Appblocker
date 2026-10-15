@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Content sits inside the ~66dp adaptive safe zone (centre). -->
+    <!-- Shield -->
+    <path android:pathData="M54,26 C54,26 68,32 80,33 C80,33 82,56 72,70 C66,78 54,84 54,84 C54,84 42,78 36,70 C26,56 28,33 28,33 C40,32 54,26 54,26 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient android:startX="28" android:startY="26" android:endX="80" android:endY="84"
+                android:type="linear">
+                <item android:offset="0" android:color="#5B8CFF" />
+                <item android:offset="1" android:color="#2F5FE0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lock body -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M45,52 h18 a3,3 0 0 1 3,3 v14 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-14 a3,3 0 0 1 3,-3 Z" />
+    <!-- Lock shackle -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="4.2" android:fillColor="#00000000"
+        android:pathData="M47,52 v-4 a7,7 0 0 1 14,0 v4" />
+    <!-- Keyhole -->
+    <path android:fillColor="#2F5FE0"
+        android:pathData="M54,58 m-3,0 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0" />
+    <path android:fillColor="#2F5FE0" android:pathData="M52.6,61 h2.8 l0.9,6 h-4.6 Z" />
+</vector>
